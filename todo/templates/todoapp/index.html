@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Todo List with Dark Mode</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- external css -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>My Todo List</h1>
+            <p class="subtitle">Organize your tasks efficiently</p>
+            <button class="theme-toggle">
+                <i class="fas fa-moon"></i>
+            </button>
+        </header>
+        <form method="post" action="{% url 'index' %}">
+            <div class="input-section">
+                {% csrf_token %}
+                <input type="text" id="task-input" name="name" placeholder="Add a new task...">
+                <input type="hidden" name="task_id" id="task-id-input">
+                <button id="add-btn">Add</button>
+            </div>
+        </form>
+        <div class="filters">
+            <a href="?filter=all" class="filter-btn {% if request.GET.filter == 'all' %}active{% endif %}">All</a>
+            <a href="?filter=active"
+                class="filter-btn {% if request.GET.filter == 'active' %}active{% endif %}">Active</a>
+            <a href="?filter=completed"
+                class="filter-btn {% if request.GET.filter == 'completed' %}active{% endif %}">Completed</a>
+        </div>
+
+        <ul class="task-list">
+            <!-- Sample tasks for demonstration -->
+            {% for i in todos %}
+            <li class="task-item {% if not i.is_active %}completed{% endif %}" data-id="{{ i.id }}">
+                <form action="{% url 'toggle_todo' i.id %}" method="post">
+                    {% csrf_token %}
+                    <input type="checkbox" style="margin-top: 5px;" name="is_active" class="task-checkbox" onchange="this.form.submit()" {% if not i.is_active %}checked{% endif %}>
+                </form>
+            
+                <span class="task-text">{{ i.name }}</span>
+            
+                <div class="task-actions">
+                    <button type="button" class="edit-btn"><i class="fas fa-edit"></i></button>
+                    <form action="{% url 'delete_todo' i.id %}" method="post" style="display:inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="delete-btn"><i class="fas fa-trash"></i></button>
+                    </form>
+                </div>
+            </li>
+            {% empty %}
+            <ul class="task-list">
+                <li class="task-item">
+                    <span class="task-text">No tasks here...</span>
+                </li>
+            </ul>
+            {% endfor %}
+
+        </ul>
+
+        <div class="stats">
+            <span>{{total_count}} tasks remaining</span>
+        </div>
+    </div>
+
+    <script src="{% static 'js/todolist.js' %}"></script>
+</body>
+
+</html>
